@@ -29,7 +29,7 @@ value rather than passing the text straight through:
 
 | Field type | Rule |
 | --- | --- |
-| Checkbox or consent | Ticked is `true`, unticked is `false` |
+| Checkbox or consent (including product option, survey and quiz fields that use checkbox inputs) | Ticked is `true`, unticked is `false`; a consent field's tick is read from its `.1` input |
 | Radio, select or text | The value is interpreted: `Yes`, `True`, `1`, `On` and `Opt in` give `true`; `No`, `No thanks`, `False`, `0`, `Off`, `Opt out` and `Unsubscribe` give `false`; an empty answer is `false` |
 
 The resulting value is sent as a JSON Boolean (`"emailsubscribe": true`,

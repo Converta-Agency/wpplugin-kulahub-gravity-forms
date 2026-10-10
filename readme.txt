@@ -5,7 +5,7 @@ Tags: gravity forms, kulahub, crm, integration, forms, automation
 Requires at least: 5.0
 Tested up to: 6.4.3
 Requires PHP: 7.4
-Stable tag: 1.2.6
+Stable tag: 1.2.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -101,6 +101,10 @@ Failed submissions are:
 
 == Changelog ==
 
+= 1.2.7 =
+* Fixed a ticked Consent field always being sent as false: the tick is stored under the field's .1 input, but the plugin read the field ID, which is always empty
+* Fields that use checkbox inputs under another field type (product option, survey or quiz) are now read from their inputs like a Checkboxes field
+
 = 1.2.6 =
 * Fixed the updater's post-install step acting on every plugin update, not only this plugin's, which matters now that the updater also runs during automatic updates
 
@@ -136,6 +140,9 @@ Failed submissions are:
 * Initial release
 
 == Upgrade Notice ==
+
+= 1.2.7 =
+Required if a Consent field is mapped to emailsubscribe or a KulaHub bit field: ticked boxes were being sent as false.
 
 = 1.2.6 =
 Includes the 1.2.5 fixes: checkboxes mapped to KulaHub bit fields are sent as Booleans, and the update prompt now appears reliably.

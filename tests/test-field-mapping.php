@@ -108,6 +108,23 @@ class Test_KulaHub_GF_Field_Mapping extends WP_UnitTestCase {
         $this->assertSame('{"bit1":false}', wp_json_encode(array('bit1' => $unticked)));
     }
 
+    public function test_consent_field_reads_the_tick_from_input_one() {
+        $field = array('id' => '8', 'type' => 'consent', 'inputs' => array(array('id' => '8.1'), array('id' => '8.2'), array('id' => '8.3')));
+
+        $ticked = array('8.1' => '1', '8.2' => 'I agree to be contacted', '8.3' => '1');
+        $unticked = array('8.1' => '', '8.2' => '', '8.3' => '');
+
+        $this->assertTrue($this->invoke_private('get_boolean_value', array($field, $ticked)));
+        $this->assertFalse($this->invoke_private('get_boolean_value', array($field, $unticked)));
+    }
+
+    public function test_checkbox_input_type_on_another_field_type_is_read_from_its_inputs() {
+        $field = array('id' => '9', 'type' => 'survey', 'inputType' => 'checkbox', 'inputs' => array(array('id' => '9.1')));
+
+        $this->assertTrue($this->invoke_private('get_boolean_value', array($field, array('9.1' => 'Yes'))));
+        $this->assertFalse($this->invoke_private('get_boolean_value', array($field, array('9.1' => ''))));
+    }
+
     public function test_save_settings() {
         $form = array(
             'id' => 1,

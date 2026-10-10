@@ -312,7 +312,7 @@ class KulaHub_GF_Integration {
     private function get_field_value($field, $entry) {
         $value = $this->get_raw_field_value($field, $entry);
 
-        if ($field['type'] === 'checkbox') {
+        if ($this->get_input_type($field) === 'checkbox') {
             return $value;
         }
 
@@ -320,13 +320,34 @@ class KulaHub_GF_Integration {
     }
 
     /**
+     * Get the input type of a field
+     *
+     * Gravity Forms renders some field types with another type's input: a
+     * product option, survey or quiz field can be a set of checkboxes. The
+     * input type, not the field type, decides where the entry stores the value.
+     */
+    private function get_input_type($field) {
+        if (is_object($field) && method_exists($field, 'get_input_type')) {
+            return $field->get_input_type();
+        }
+
+        $input_type = rgar($field, 'inputType');
+
+        return empty($input_type) ? rgar($field, 'type') : $input_type;
+    }
+
+    /**
      * Get the entry value for a field without any presentation formatting
      */
     private function get_raw_field_value($field, $entry) {
-        if ($field['type'] === 'checkbox') {
+        $input_type = $this->get_input_type($field);
+
+        // A checkbox field stores each ticked choice under its own input ID
+        // (7.1, 7.2 and so on), never under the field ID.
+        if ($input_type === 'checkbox') {
             $checkbox_values = array();
-            foreach ($field['inputs'] as $input) {
-                $input_value = rgar($entry, $input['id']);
+            foreach ((array) $field['inputs'] as $input) {
+                $input_value = rgar($entry, (string) $input['id']);
                 if (!empty($input_value)) {
                     $checkbox_values[] = $input_value;
                 }
@@ -334,7 +355,13 @@ class KulaHub_GF_Integration {
             return implode(', ', $checkbox_values);
         }
 
-        return rgar($entry, $field['id']);
+        // A consent field stores the tick under input .1; .2 and .3 hold the
+        // consent text and its revision.
+        if ($input_type === 'consent') {
+            return rgar($entry, $field['id'] . '.1');
+        }
+
+        return rgar($entry, (string) $field['id']);
     }
 
     /**
@@ -360,8 +387,9 @@ class KulaHub_GF_Integration {
      */
     private function get_boolean_value($field, $entry) {
         $value = $this->get_raw_field_value($field, $entry);
+        $input_type = $this->get_input_type($field);
 
-        if ($field['type'] === 'checkbox' || $field['type'] === 'consent') {
+        if ($input_type === 'checkbox' || $input_type === 'consent') {
             return !empty($value);
         }
 
