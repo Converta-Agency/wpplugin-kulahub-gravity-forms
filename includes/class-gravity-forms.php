@@ -265,10 +265,11 @@ class KulaHub_GF_Integration {
                 $field_key = $field['encryptField'];
                 $is_email_subscribe = strtolower($field_key) === 'emailsubscribe';
 
-                // KulaHub stores emailsubscribe as a Boolean, so it must be resolved
-                // to true or false rather than passed through as a string.
-                $field_value = $is_email_subscribe
-                    ? $this->get_email_subscribe_value($field, $entry)
+                // KulaHub stores emailsubscribe and bit custom fields as Booleans,
+                // so they must be resolved to true or false rather than passed
+                // through as a string.
+                $field_value = $this->is_boolean_field($field_key)
+                    ? $this->get_boolean_value($field, $entry)
                     : $this->get_field_value($field, $entry);
 
                 error_log('KulaHub GF: Processing field - ' . $field_key . ' = ' . $this->format_value_for_log($field_value));
@@ -337,14 +338,27 @@ class KulaHub_GF_Integration {
     }
 
     /**
-     * Resolve the emailsubscribe field to a Boolean
+     * Check if a KulaHub field is typed as a Boolean
      *
-     * The KulaHub AddForm endpoint expects Contact.Emailsubscribe as a Boolean.
-     * A checkbox or consent field only reports a value when it is ticked, so
-     * presence alone is consent. Every other field type (radio, select, text)
+     * Contact.Emailsubscribe is a Boolean, as is every bit custom field, whose
+     * personalisation code is "bit" followed by a number (bit1, bit2 and so on).
+     */
+    private function is_boolean_field($field_key) {
+        $field_key = strtolower($field_key);
+
+        return $field_key === 'emailsubscribe' || preg_match('/^bit\d+$/', $field_key) === 1;
+    }
+
+    /**
+     * Resolve a Boolean field (emailsubscribe or a bit custom field) to a Boolean
+     *
+     * The KulaHub AddForm endpoint rejects a string such as "Yes" for these
+     * fields, so the submitted answer is converted to true or false. A checkbox
+     * or consent field only reports a value when it is ticked, so presence
+     * alone is consent. Every other field type (radio, select, text)
      * carries the answer in its value, so the value itself is interpreted.
      */
-    private function get_email_subscribe_value($field, $entry) {
+    private function get_boolean_value($field, $entry) {
         $value = $this->get_raw_field_value($field, $entry);
 
         if ($field['type'] === 'checkbox' || $field['type'] === 'consent') {

@@ -3,7 +3,7 @@
  * Plugin Name: KulaHub Integration for Gravity Forms
  * Plugin URI: https://github.com/Converta-Agency/wpplugin-kulahub-gravity-forms
  * Description: Integrates Gravity Forms with KulaHub CRM
- * Version: 1.2.4
+ * Version: 1.2.5
  * Author: Danny Penrose
  * Author URI: https://kulahub.com
  * License: GPL v2 or later
@@ -24,19 +24,13 @@ function kulahub_gf_load_textdomain() {
     load_plugin_textdomain('kulahub-gf', false, dirname(plugin_basename(__FILE__)) . '/languages');
 }
 
-// Initialize the updater
-if (is_admin()) {
-    require_once plugin_dir_path(__FILE__) . 'includes/class-updater.php';
-    new KulaHub_GF_Updater(__FILE__);
-}
-
 // If this file is called directly, abort.
 if (!defined('WPINC')) {
     die;
 }
 
 // Plugin version.
-define('KULAHUB_GF_VERSION', '1.2.4');
+define('KULAHUB_GF_VERSION', '1.2.5');
 define('KULAHUB_GF_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('KULAHUB_GF_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -46,6 +40,12 @@ require_once KULAHUB_GF_PLUGIN_DIR . 'includes/class-gravity-forms.php';
 require_once KULAHUB_GF_PLUGIN_DIR . 'includes/class-api.php';
 require_once KULAHUB_GF_PLUGIN_DIR . 'includes/class-updater.php';
 require_once KULAHUB_GF_PLUGIN_DIR . 'includes/class-failed-submissions.php';
+
+// The updater is registered on every request, not only in the admin, because
+// WordPress also checks for plugin updates from its twice-daily cron. Without
+// the filter in place there, each cron check overwrote the update list without
+// this plugin's release and the update prompt disappeared.
+new KulaHub_GF_Updater(__FILE__);
 
 /**
  * Initialize the plugin

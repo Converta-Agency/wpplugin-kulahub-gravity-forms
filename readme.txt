@@ -5,7 +5,7 @@ Tags: gravity forms, kulahub, crm, integration, forms, automation
 Requires at least: 5.0
 Tested up to: 6.4.3
 Requires PHP: 7.4
-Stable tag: 1.2.4
+Stable tag: 1.2.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -101,6 +101,10 @@ Failed submissions are:
 
 == Changelog ==
 
+= 1.2.5 =
+* Fixed checkbox fields mapped to a KulaHub bit custom field (bit1, bit2 and so on) being sent as text such as "Yes", which caused those submissions to be rejected; they are now sent as a Boolean
+* Fixed the update prompt not appearing reliably: WordPress's scheduled update check ran without the plugin's updater, so the available release was dropped from the update list
+
 = 1.2.4 =
 * Fixed emailsubscribe being sent to the KulaHub API as the string "True" instead of a Boolean, which caused submissions with an opt-in field to be rejected
 * Fixed a "No" answer on an emailsubscribe radio or select field being treated as an opt-in
@@ -129,6 +133,9 @@ Failed submissions are:
 * Initial release
 
 == Upgrade Notice ==
+
+= 1.2.5 =
+Required if your forms map a checkbox to a KulaHub bit field: those values are now sent as a Boolean, so the submissions reach KulaHub instead of being rejected.
 
 = 1.2.4 =
 Required if your forms use an email opt-in field: emailsubscribe is now sent as a Boolean, so those submissions reach KulaHub instead of being rejected.

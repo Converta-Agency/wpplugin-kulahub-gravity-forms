@@ -44,7 +44,7 @@ class Test_KulaHub_GF_Field_Mapping extends WP_UnitTestCase {
             list($field, $entry) = $this->radio_field($answer);
 
             $this->assertTrue(
-                $this->invoke_private('get_email_subscribe_value', array($field, $entry)),
+                $this->invoke_private('get_boolean_value', array($field, $entry)),
                 sprintf('Expected "%s" to resolve to true', $answer)
             );
         }
@@ -55,7 +55,7 @@ class Test_KulaHub_GF_Field_Mapping extends WP_UnitTestCase {
             list($field, $entry) = $this->radio_field($answer);
 
             $this->assertFalse(
-                $this->invoke_private('get_email_subscribe_value', array($field, $entry)),
+                $this->invoke_private('get_boolean_value', array($field, $entry)),
                 sprintf('Expected "%s" to resolve to false', $answer)
             );
         }
@@ -64,22 +64,48 @@ class Test_KulaHub_GF_Field_Mapping extends WP_UnitTestCase {
     public function test_email_subscribe_returns_false_when_no_answer_is_given() {
         list($field, $entry) = $this->radio_field('');
 
-        $this->assertFalse($this->invoke_private('get_email_subscribe_value', array($field, $entry)));
+        $this->assertFalse($this->invoke_private('get_boolean_value', array($field, $entry)));
     }
 
     public function test_email_subscribe_treats_a_ticked_checkbox_as_consent() {
         $field = array('id' => '6', 'type' => 'checkbox', 'inputs' => array(array('id' => '6.1')));
 
-        $this->assertTrue($this->invoke_private('get_email_subscribe_value', array($field, array('6.1' => 'Keep me informed'))));
-        $this->assertFalse($this->invoke_private('get_email_subscribe_value', array($field, array('6.1' => ''))));
+        $this->assertTrue($this->invoke_private('get_boolean_value', array($field, array('6.1' => 'Keep me informed'))));
+        $this->assertFalse($this->invoke_private('get_boolean_value', array($field, array('6.1' => ''))));
     }
 
     public function test_email_subscribe_is_encoded_as_a_json_boolean_not_a_string() {
         list($field, $entry) = $this->radio_field('Yes');
 
-        $value = $this->invoke_private('get_email_subscribe_value', array($field, $entry));
+        $value = $this->invoke_private('get_boolean_value', array($field, $entry));
 
         $this->assertSame('{"emailsubscribe":true}', wp_json_encode(array('emailsubscribe' => $value)));
+    }
+
+    public function test_bit_custom_fields_are_treated_as_booleans() {
+        foreach (array('emailsubscribe', 'EmailSubscribe', 'bit1', 'BIT1', 'bit12') as $field_key) {
+            $this->assertTrue(
+                $this->invoke_private('is_boolean_field', array($field_key)),
+                sprintf('Expected "%s" to be a Boolean field', $field_key)
+            );
+        }
+
+        foreach (array('varchar1', 'number1', 'bit', 'bitx', 'mybit1', 'bit1a') as $field_key) {
+            $this->assertFalse(
+                $this->invoke_private('is_boolean_field', array($field_key)),
+                sprintf('Expected "%s" not to be a Boolean field', $field_key)
+            );
+        }
+    }
+
+    public function test_bit_checkbox_is_encoded_as_a_json_boolean() {
+        $field = array('id' => '7', 'type' => 'checkbox', 'inputs' => array(array('id' => '7.1')));
+
+        $ticked = $this->invoke_private('get_boolean_value', array($field, array('7.1' => 'Yes')));
+        $unticked = $this->invoke_private('get_boolean_value', array($field, array('7.1' => '')));
+
+        $this->assertSame('{"bit1":true}', wp_json_encode(array('bit1' => $ticked)));
+        $this->assertSame('{"bit1":false}', wp_json_encode(array('bit1' => $unticked)));
     }
 
     public function test_save_settings() {

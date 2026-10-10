@@ -21,15 +21,16 @@ Contact fields: `title`, `firstname`, `lastname`, `jobtitle`, `website`,
 Custom fields use the form's personalisation code without the hashtags, for
 example `varchar1`, `money1`, `number1`.
 
-### emailsubscribe is a Boolean
+### Boolean fields: emailsubscribe and bit custom fields
 
-The KulaHub `AddForm` endpoint types `Contact.Emailsubscribe` as a Boolean, so the
-plugin converts the submitted value rather than passing the text straight through:
+The KulaHub `AddForm` endpoint types `Contact.Emailsubscribe` and every bit custom
+field (`bit1`, `bit2` and so on) as Booleans, so the plugin converts the submitted
+value rather than passing the text straight through:
 
 | Field type | Rule |
 | --- | --- |
 | Checkbox or consent | Ticked is `true`, unticked is `false` |
 | Radio, select or text | The value is interpreted: `Yes`, `True`, `1`, `On` and `Opt in` give `true`; `No`, `No thanks`, `False`, `0`, `Off`, `Opt out` and `Unsubscribe` give `false`; an empty answer is `false` |
 
-The resulting value is sent as a JSON Boolean (`"emailsubscribe": true`), never as
-a string such as `"True"`.
+The resulting value is sent as a JSON Boolean (`"emailsubscribe": true`,
+`"bit1": false`), never as a string such as `"True"` or `"Yes"`.
