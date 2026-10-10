@@ -199,6 +199,12 @@ class KulaHub_GF_Updater {
     public function after_install($response, $hook_extra, $result) {
         global $wp_filesystem;
 
+        // This filter runs for every plugin and theme install, so leave any
+        // package other than this plugin untouched.
+        if (!isset($hook_extra['plugin']) || $hook_extra['plugin'] !== $this->basename) {
+            return $result;
+        }
+
         $install_directory = plugin_dir_path($this->file);
         $wp_filesystem->move($result['destination'], $install_directory);
         $result['destination'] = $install_directory;
